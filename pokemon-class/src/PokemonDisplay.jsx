@@ -9,10 +9,27 @@ export default class PokemonDisplay extends React.Component{
             pokemonName: null
         }
     }
-    componentDidMount(){
-        this.name = "Bulbasaur"
-        console.log(this.name);
+    async componentDidMount(){
         console.log("Did mount triggers after the component was rendered");
+        // Generate a random number between 1 and 1017 (number of Pokemons ???)
+        function getRandomPokemonId(){
+            return Math.floor(Math.random() * 1017) +1;
+        }
+
+        let response = await fetch("https://pokeapi.co/api/v2/pokemon/" + getRandomPokemonId()).catch(error => {
+            throw new Error("API failure");
+        });
+    
+        if (response.status === "404") {
+            throw new Error("API did not have data for the requested ID")
+        };
+    
+        //Convert the response into usable JSON
+        let data = await response.json().catch(error => {
+            throw new Error("API did not return valid JSON");
+        })
+        console.log(data.name);
+        this.setState({ pokemonName: data.name })
     }
 
     componentWillUnmount(){
@@ -20,9 +37,16 @@ export default class PokemonDisplay extends React.Component{
     }
 
     render(){
-        return(
-            <h2>Pokemon {this.name}</h2>
-        )
+        if (this.state.pokemonName){
+            return(
+                <h2>{this.state.pokemonName}</h2>
+            )
+        } else {
+            return(
+                <h2>Loading...</h2>
+            )
+        }
+        
     }
     
 }
